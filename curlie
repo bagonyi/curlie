@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import argparse
+import subprocess
+
+def module_exists(module_name):
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
+
+def quote(array):
+    return ["'" + item + "'" for item in array]
+
+if module_exists('urllib.parse'):
+    from urllib.parse import unquote
+else:
+    from urllib import unquote
+
+parser = argparse.ArgumentParser()
+parser.add_argument("url", help="The url to send the request to.")
+parser.add_argument("--data")
+parser.add_argument("-H", action="append", dest='headers')
+
+# HTTPie arguments
+parser.add_argument("--verbose", action="store_true")
+parser.add_argument("--timeout", type=int)
+
+# curlie arguments
+parser.add_argument("-q", "--quiet", action="store_true")
+
+# ignored curl arguments
+parser.add_argument("--compressed", action="store_true")
+
+args = parser.parse_args()
+
+flags = []
+method = "GET"
+
+data = None
+if args.data:
+    data = quote(unquote(args.data).split("&"))
+    method = "POST"
+
+if "Content-Type: application/x-www-form-urlencoded" in args.headers:
+    flags.append("-f")
+
+headers = quote(args.headers)
+
+httpieArgs = []
+
+if len(flags) > 0:
+    httpieArgs.append(" ".join(flags))
+
+httpieArgs.append(method)
+httpieArgs.append(args.url)
+
+if len(headers) > 0:
+    httpieArgs.append(" ".join(headers))
+
+if len(data) > 0:
+    httpieArgs.append(' '.join(data))
+
+if args.verbose:
+    httpieArgs.append("--verbose")
+
+if args.timeout is not None:
+    httpieArgs.append("--timeout " + args.timeout)
+
+cmd = "http " + " ".join(httpieArgs)
+
+if not args.quiet:
+    print("\n" + cmd + "\n")
+
+subprocess.call(cmd, shell=True)
