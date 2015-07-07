@@ -57,10 +57,10 @@ if len(flags) > 0:
 httpieArgs.append(method)
 httpieArgs.append(args.url)
 
-if len(headers) > 0:
+if headers and len(headers) > 0:
     httpieArgs.append(" ".join(headers))
 
-if len(data) > 0:
+if data and len(data) > 0:
     httpieArgs.append(' '.join(data))
 
 if args.verbose:
