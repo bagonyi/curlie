@@ -11,8 +11,8 @@ def module_exists(module_name):
     else:
         return True
 
-def quote(array):
-    return ["'" + item + "'" for item in array]
+def quote(items):
+    return ["'" + item + "'" for item in items]
 
 if module_exists('urllib.parse'):
     from urllib.parse import unquote
@@ -55,7 +55,7 @@ if len(flags) > 0:
     httpieArgs.append(" ".join(flags))
 
 httpieArgs.append(method)
-httpieArgs.append(args.url)
+httpieArgs.append("'" + args.url + "'")
 
 if headers and len(headers) > 0:
     httpieArgs.append(" ".join(headers))
